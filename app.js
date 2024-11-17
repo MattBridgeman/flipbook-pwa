@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     request.onupgradeneeded = function(event) {
         db = event.target.result;
-        db.createObjectStore('animations', { keyPath: 'id', autoIncrement: true });
+        db.createObjectStore('animations', { keyPath: 'name' });
     };
 
     request.onsuccess = function(event) {
@@ -80,10 +80,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to save the current animation
     function saveAnimation() {
+        const name = prompt('Enter a name for your animation:');
+        if (!name) return;
+
         const transaction = db.transaction(['animations'], 'readwrite');
         const store = transaction.objectStore('animations');
         const animationData = pages.map(page => page.data);
-        store.add({ pages: animationData });
+        store.put({ name, pages: animationData });
     }
 
     // Function to load animations
@@ -95,13 +98,17 @@ document.addEventListener('DOMContentLoaded', () => {
         request.onsuccess = function(event) {
             const animations = event.target.result;
             if (animations.length > 0) {
-                const animation = animations[0]; // Load the first animation
-                pages.length = 0;
-                animation.pages.forEach(pageData => {
-                    const imageData = new ImageData(new Uint8ClampedArray(pageData), canvas.width, canvas.height);
-                    pages.push(imageData);
-                });
-                switchPage(0);
+                const animationNames = animations.map(animation => animation.name);
+                const selectedName = prompt('Choose an animation to load:', animationNames.join(', '));
+                const animation = animations.find(anim => anim.name === selectedName);
+                if (animation) {
+                    pages.length = 0;
+                    animation.pages.forEach(pageData => {
+                        const imageData = new ImageData(new Uint8ClampedArray(pageData), canvas.width, canvas.height);
+                        pages.push(imageData);
+                    });
+                    switchPage(0);
+                }
             }
         };
     }
