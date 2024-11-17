@@ -10,7 +10,7 @@ FlipBook is a Progressive Web App (PWA) designed for creating basic "pencil test
 - **Canvas API**: For 2D drawing and animation.
 - **Service Workers**: To enable offline functionality and caching.
 - **Web App Manifest**: To define app metadata and enable installation.
-- **IndexedDB or LocalStorage**: For saving user animations locally.
+- **IndexedDB**: For saving user animations locally.
 - **React or Vue.js**: For building a dynamic user interface.
 - **Workbox**: For simplifying service worker implementation.
 

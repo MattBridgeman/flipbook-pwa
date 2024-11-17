@@ -11,6 +11,23 @@ document.addEventListener('DOMContentLoaded', () => {
     let tool = 'pencil'; // Default tool is pencil
     const pages = [ctx.getImageData(0, 0, canvas.width, canvas.height)];
 
+    // Open IndexedDB
+    const request = indexedDB.open('FlipBookDB', 1);
+    let db;
+
+    request.onupgradeneeded = function(event) {
+        db = event.target.result;
+        db.createObjectStore('animations', { keyPath: 'id', autoIncrement: true });
+    };
+
+    request.onsuccess = function(event) {
+        db = event.target.result;
+    };
+
+    request.onerror = function(event) {
+        console.error('Database error:', event.target.errorCode);
+    };
+
     // Function to start drawing
     function startDrawing(e) {
         drawing = true;
@@ -61,6 +78,34 @@ document.addEventListener('DOMContentLoaded', () => {
         tool = selectedTool;
     }
 
+    // Function to save the current animation
+    function saveAnimation() {
+        const transaction = db.transaction(['animations'], 'readwrite');
+        const store = transaction.objectStore('animations');
+        const animationData = pages.map(page => page.data);
+        store.add({ pages: animationData });
+    }
+
+    // Function to load animations
+    function loadAnimations() {
+        const transaction = db.transaction(['animations'], 'readonly');
+        const store = transaction.objectStore('animations');
+        const request = store.getAll();
+
+        request.onsuccess = function(event) {
+            const animations = event.target.result;
+            if (animations.length > 0) {
+                const animation = animations[0]; // Load the first animation
+                pages.length = 0;
+                animation.pages.forEach(pageData => {
+                    const imageData = new ImageData(new Uint8ClampedArray(pageData), canvas.width, canvas.height);
+                    pages.push(imageData);
+                });
+                switchPage(0);
+            }
+        };
+    }
+
     // Event listeners for mouse actions
     canvas.addEventListener('mousedown', startDrawing);
     canvas.addEventListener('mouseup', stopDrawing);
@@ -102,4 +147,15 @@ document.addEventListener('DOMContentLoaded', () => {
     eraserButton.textContent = 'Eraser';
     eraserButton.onclick = () => switchTool('eraser');
     controls.appendChild(eraserButton);
+
+    // Add buttons for saving and loading animations
+    const saveButton = document.createElement('button');
+    saveButton.textContent = 'Save Animation';
+    saveButton.onclick = saveAnimation;
+    controls.appendChild(saveButton);
+
+    const loadButton = document.createElement('button');
+    loadButton.textContent = 'Load Animation';
+    loadButton.onclick = loadAnimations;
+    controls.appendChild(loadButton);
 });
