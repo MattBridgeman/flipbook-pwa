@@ -76,8 +76,13 @@ document.addEventListener('DOMContentLoaded', () => {
     addPageButton.onclick = addPage;
     controls.appendChild(addPageButton);
 
-    const switchPageButton = document.createElement('button');
-    switchPageButton.textContent = 'Switch Page';
-    switchPageButton.onclick = () => switchPage((currentPage + 1) % pages.length);
-    controls.appendChild(switchPageButton);
+    const nextPageButton = document.createElement('button');
+    nextPageButton.textContent = 'Next Page';
+    nextPageButton.onclick = () => switchPage((currentPage + 1) % pages.length);
+    controls.appendChild(nextPageButton);
+
+    const prevPageButton = document.createElement('button');
+    prevPageButton.textContent = 'Previous Page';
+    prevPageButton.onclick = () => switchPage((currentPage - 1 + pages.length) % pages.length);
+    controls.appendChild(prevPageButton);
 });
