@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let drawing = false;
     let currentPage = 0;
+    let tool = 'pencil'; // Default tool is pencil
     const pages = [ctx.getImageData(0, 0, canvas.width, canvas.height)];
 
     // Function to start drawing
@@ -26,9 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function draw(e) {
         if (!drawing) return;
 
-        ctx.lineWidth = 2;
+        ctx.lineWidth = tool === 'pencil' ? 2 : 10; // Eraser is wider than pencil
         ctx.lineCap = 'round';
-        ctx.strokeStyle = 'black';
+        ctx.strokeStyle = tool === 'pencil' ? 'black' : 'white';
 
         // Get the position for both mouse and touch events
         const rect = canvas.getBoundingClientRect();
@@ -53,6 +54,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function addPage() {
         pages.push(ctx.createImageData(canvas.width, canvas.height));
         switchPage(pages.length - 1);
+    }
+
+    // Function to switch tools
+    function switchTool(selectedTool) {
+        tool = selectedTool;
     }
 
     // Event listeners for mouse actions
@@ -85,4 +91,15 @@ document.addEventListener('DOMContentLoaded', () => {
     prevPageButton.textContent = 'Previous Page';
     prevPageButton.onclick = () => switchPage((currentPage - 1 + pages.length) % pages.length);
     controls.appendChild(prevPageButton);
+
+    // Add buttons for switching tools
+    const pencilButton = document.createElement('button');
+    pencilButton.textContent = 'Pencil';
+    pencilButton.onclick = () => switchTool('pencil');
+    controls.appendChild(pencilButton);
+
+    const eraserButton = document.createElement('button');
+    eraserButton.textContent = 'Eraser';
+    eraserButton.onclick = () => switchTool('eraser');
+    controls.appendChild(eraserButton);
 });
