@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentPage = 0;
     let tool = 'pencil'; // Default tool is pencil
     const pages = [ctx.getImageData(0, 0, canvas.width, canvas.height)];
+    let animationInterval;
 
     // Open IndexedDB
     const request = indexedDB.open('FlipBookDB', 1);
@@ -30,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to start drawing
     function startDrawing(e) {
+        if (animationInterval) return; // Prevent drawing while playing
         drawing = true;
         draw(e);
     }
@@ -86,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const transaction = db.transaction(['animations'], 'readwrite');
         const store = transaction.objectStore('animations');
         const animationData = pages.map(page => page.data);
-        store.put({ name, pages: animationData });
+        store.put({ name, pages: animationData }); // Use put to replace if exists
     }
 
     // Function to load animations
@@ -112,6 +114,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         };
+    }
+
+    // Function to play the animation
+    function playAnimation() {
+        if (animationInterval) return; // Prevent multiple intervals
+        animationInterval = setInterval(() => {
+            currentPage = (currentPage + 1) % pages.length;
+            ctx.putImageData(pages[currentPage], 0, 0);
+        }, 1000 / 24); // 24 frames per second
+    }
+
+    // Function to pause the animation
+    function pauseAnimation() {
+        clearInterval(animationInterval);
+        animationInterval = null;
     }
 
     // Event listeners for mouse actions
@@ -166,4 +183,15 @@ document.addEventListener('DOMContentLoaded', () => {
     loadButton.textContent = 'Load Animation';
     loadButton.onclick = loadAnimations;
     controls.appendChild(loadButton);
+
+    // Add buttons for playing and pausing animations
+    const playButton = document.createElement('button');
+    playButton.textContent = 'Play';
+    playButton.onclick = playAnimation;
+    controls.appendChild(playButton);
+
+    const pauseButton = document.createElement('button');
+    pauseButton.textContent = 'Pause';
+    pauseButton.onclick = pauseAnimation;
+    controls.appendChild(pauseButton);
 });
