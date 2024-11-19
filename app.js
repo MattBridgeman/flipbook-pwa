@@ -107,7 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         const imageData = new ImageData(new Uint8ClampedArray(pageData), canvas.width, canvas.height);
                         pages.push(imageData);
                     });
-                    switchPage(0);
+                    currentPage = 0; // Reset to the first page
+                    ctx.putImageData(pages[currentPage], 0, 0); // Display the first page
                 }
             }
         };
